@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"errors"
+	"strconv"
 	"fmt"
 	"log/slog"
 	"os"
@@ -37,6 +38,7 @@ var errTargets = errors.New("target count mismatch")
 
 var opts struct {
 	url           string
+	timeoutRaw    string
 	timeout       time.Duration
 	expectTargets int
 	verbose       bool
@@ -53,6 +55,11 @@ func NewRoot() *cobraRoot {
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			d, err := parseTimeout(opts.timeoutRaw)
+			if err != nil {
+				return fmt.Errorf("%w: --timeout: %v", errUsage, err)
+			}
+			opts.timeout = d
 			if opts.verbose {
 				slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug})))
 			} else {
@@ -61,8 +68,11 @@ func NewRoot() *cobraRoot {
 			return nil
 		},
 	}
+	cmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
+		return fmt.Errorf("%w: %v", errUsage, err)
+	})
 	cmd.PersistentFlags().StringVar(&opts.url, "url", envOr("AGWCTL_URL", "http://127.0.0.1:8083/mcp"), "gateway MCP endpoint")
-	cmd.PersistentFlags().DurationVar(&opts.timeout, "timeout", 120*time.Second, "initialize and call timeout")
+	cmd.PersistentFlags().StringVar(&opts.timeoutRaw, "timeout", "120s", "initialize and call timeout; plain number means seconds")
 	cmd.PersistentFlags().IntVar(&opts.expectTargets, "expect-targets", 8, "warn when fewer targets answer (0 disables)")
 	cmd.PersistentFlags().BoolVar(&opts.refresh, "refresh", false, "bypass the tool-list cache and refetch")
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "log protocol details to stderr")
@@ -102,6 +112,15 @@ func Execute() int {
 		return ExitProtocol
 	}
 	return ExitOK
+}
+
+// parseTimeout accepts Go durations and bare integers as seconds, so both
+// --timeout 300 and --timeout 300s work.
+func parseTimeout(raw string) (time.Duration, error) {
+	if n, err := strconv.Atoi(raw); err == nil {
+		return time.Duration(n) * time.Second, nil
+	}
+	return time.ParseDuration(raw)
 }
 
 func envOr(name, def string) string {

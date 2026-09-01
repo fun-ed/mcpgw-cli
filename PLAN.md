@@ -109,7 +109,7 @@ agwctl doctor [--expect-targets N]     gateway 可達性、initialize 延遲、
 
 用 `github.com/modelcontextprotocol/go-sdk` v1.7.0。理由：MCP spec 2026-07-28 大改（stateless core、`server/discover` 取代 initialize），自己追 wire format 不划算。v1.7.0 保留對 2025-11-25 以前的相容，連線時協商雙方都支援的最高版本。
 
-agentgateway v1.5.0 對 mixed upstream 會走 legacy stateful 流程（initialize handshake + `mcp-session-id`），這裡 8 個 upstream 全是 legacy，所以實際協商結果應落在 `2025-06-18`。M1 的第一件事就是驗證這件事。
+agentgateway v1.5.0 對 mixed upstream 走 legacy stateful 流程（initialize handshake + `mcp-session-id`）。實測協商在 `2025-06-18` 與 `2025-11-25` 之間浮動（皆 legacy stateful，相容）。cutover 調研確認 gateway 本體已支援 MCP 2026-07-28 的 stateless `server/discover`，但 multiplexing 協商取全部 upstream 的版本交集，任何一個 legacy upstream 都把整體壓在 legacy；agwctl 跟著協商結果走，不單方面升級。
 
 Fallback 路徑已驗證可行：`agw-mcp.py` 證明這個 gateway 只需要 `POST /mcp`、`Accept: application/json, text/event-stream`、`mcp-session-id` header、SSE `data:` 行解析，手寫 thin JSON-RPC client 約 150 行。SDK 若在 M1 撞牆，降級走這條，不影響其他設計。
 
@@ -211,6 +211,7 @@ Baseline 已量，閘門已過。這些是 M1 之後所有量測的對照組：
 | 改善前：70 tools 完整 schema | 40,740 chars ≈ 10.2k tokens | 每個 session 每個 turn 都背 |
 | 改善前：70 tools 描述 | 33,826 chars ≈ 8.5k tokens | 同上 |
 | 改善前合計 | ≈ 18.6k tokens / session | 本專案的目標數字 |
+| cutover 後 session schema | 0（兩個 harness 已移除 `mcpServers.agentgateway`） | 2026-09-01 生效 |
 | `tools list` 無 schema 版 | 6,653 bytes ≈ 1.7k tokens（一次性） | 約省 91%（M1 實測，與預估 6,579 一致） |
 | 單次執行延遲 | 約 3.0s（initialize 0.5s、fanout floor 每請求約 0.5s） | batch 模式（M2）消除多步重複成本 |
 | `tools search` top 5 | 預估 < 150 tokens | 實做後複測 |

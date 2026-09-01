@@ -20,9 +20,12 @@ Copilot CLI / Claude Code / Kiro / Codex / Devin
 ## 適配範圍
 
 以 **agentgateway v1.5.0+** 的 legacy stateful streamable HTTP 為主：
-`initialize` handshake、`mcp-session-id` header、session DELETE。對活 gateway
-實測協商 `protocolVersion 2025-06-18`。MCP 2026-07-28 的 stateless
-`server/discover` 模式要等 gateway 端支援後另行適配，見 `PLAN.md` 風險表。
+`initialize` handshake、`mcp-session-id` header、session DELETE。實測協商
+`protocolVersion` 在 `2025-06-18` 與 `2025-11-25` 之間（皆 legacy stateful）。
+
+gateway 本體已支援 MCP 2026-07-28（stateless `server/discover`），但
+multiplexing 模式下協商取**全部 upstream 的版本交集**：任何一個 legacy
+upstream 都把整體壓在 legacy。agwctl 跟著協商結果走，client 端不單方面升級。
 
 ## 安裝
 
@@ -69,14 +72,33 @@ agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
 | 5 | transport / protocol 錯誤 |
 | 6 | `doctor --expect-targets` 不符 |
 
-## 量測（2026-09-01，8 targets / 70 tools；晚間 ref-context upstream 500 時 68/7，doctor 正確 exit 6）
+## Benchmark（2026-09-01 實測 + cutover 記錄）
 
-| 量項 | 數字 |
-|---|---|
-| 改善前：完整 schema + 描述 | ≈ 18.6k tokens / session |
-| `tools list`（無 schema） | 6,653 bytes ≈ 1.7k tokens，省約 91% |
-| `tools search` top 5 | < 150 tokens；快取命中 0.024s |
-| 單次執行 | 約 3s（initialize 0.5s + gateway fanout floor 約 0.5s/請求） |
+| 情境 | schema 進 session context | 中間結果 |
+|---|---|---|
+| 直接 MCP 連線（cutover 前） | 70 tools 完整 schema ≈ **18.6k tokens**，每個 turn 重複背 | 每步 tool call 的完整回應都回 LLM |
+| agwctl（cutover 後） | **0**：harness 只知道一個 bash 指令 | `--jq` / `--max-chars` / `--out` 控制，只有最終結果回 LLM |
+
+| 操作 | 成本 | 備註 |
+|---|---|---|
+| `tools search` top 5 | < 150 tokens；快取命中 0.024s | 快取 TTL 10 分鐘 |
+| `tools list`（一次性） | 6,653 bytes ≈ 1.7k tokens | 約省 91% |
+| `tools describe` | 只付該 tool 的 schema | 唯一需要 schema 的時候 |
+| `call --jq/--max-chars` | 預設輸出上界 20,000 chars | deepwiki 3k 字答案只取需要的段 |
+| 單次執行延遲 | 約 3s | initialize 0.5s + gateway fanout floor 約 0.5s/請求 |
+
+### Cutover 記錄（2026-09-01）
+
+- **Kiro**（acpx dispatch，session 無 gateway MCP）：只用 shell + agwctl 完成
+  agentgateway 對 MCP 2026-07-28 支援度的調研，產出 98 行研究筆記
+  （`/tmp/agw-kiro-research.md`）。發現 gateway 已支援 2026-07-28 與版本交集
+  行為，據此修正本 README 的適配聲明。
+- **Copilot CLI**（config 移除 agentgateway 後的本 session）：同研究鏈的後續
+  問題以 agwctl 完成。過程抓到兩個 UX 問題並當場修掉：`--timeout 300` 裸數字
+  被拒（現在裸數字視為秒）；flag 錯誤誤回 exit 5（改回 exit 2）。
+- 兩個 harness 的 `mcpServers.agentgateway` 均已移除；原設定備份在
+  `~/temp/agentgateway-backups/agentgateway-20260901-233629/`。
+- 當晚 ref-context upstream 500，doctor 正確回報 68/7 tools 並 exit 6。
 
 ## 文件地圖
 
