@@ -103,6 +103,15 @@ agwctl doctor [--expect-targets N]     gateway 可達性、initialize 延遲、
 
 不搞 embedding、vector DB、SQLite、daemon、plugin system、schema 本地快取、resource/prompts 支援、auth（gateway 本機無 auth）、config file（URL 固定，`--url` 和 `AGWCTL_URL` env 就夠；有需要 v0.2 再說）。工具清單只快取名稱與一行描述、短 TTL 加 `--refresh`（見 §4），schema 永遠不快取。
 
+### 未來候選 platform
+
+記錄兩個未來的 gateway platform 候選：**LiteLLM MCP Gateway** 與
+**MCPJungle**（本機在 bifrost 之前用過的自架 gateway）。若 agentgateway
+不再符合需求（例如需要多租戶、per-agent scoping、企業級審計），先評估這兩個。
+agwctl 的契約刻意與平台無關：`internal/gw` 的 client 是唯一要換的層，
+§3 輸出契約、exit codes、flags 全部不變。屆時重寫 §4 的適配聲明並重跑
+§8 的 Eval 清單，不動 CLI 層。
+
 ## 4. 關鍵設計決策
 
 ### MCP client：用官方 SDK，備妥 fallback
