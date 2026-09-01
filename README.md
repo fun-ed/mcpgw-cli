@@ -55,6 +55,7 @@ agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
 | `tools describe NAME` | 該 tool 的 name、description、inputSchema |
 | `call NAME [--arg k=v] [--json @f] [--jq EXPR] [--max-chars N] [--out F]` | 呼叫一個 tool |
 | `call --stdin` | JSONL batch：多請求、單一 session、一次 initialize |
+| `doctor [--expect-targets N] [--json]` | 可達性、initialize 延遲、每 target tool 數、異常提示；永遠活取 |
 
 ## Exit codes
 
@@ -66,9 +67,9 @@ agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
 | 3 | gateway 不可達或 initialize 失敗 |
 | 4 | 逾時 |
 | 5 | transport / protocol 錯誤 |
-| 6 | `doctor --expect-targets` 不符（M3） |
+| 6 | `doctor --expect-targets` 不符 |
 
-## 量測（2026-09-01，8 targets / 70 tools）
+## 量測（2026-09-01，8 targets / 70 tools；晚間 ref-context upstream 500 時 68/7，doctor 正確 exit 6）
 
 | 量項 | 數字 |
 |---|---|

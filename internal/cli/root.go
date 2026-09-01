@@ -31,6 +31,9 @@ var errProtocol = errors.New("gateway call failed")
 // errToolResult marks a completed call whose result isError.
 var errToolResult = errors.New("tool returned an error")
 
+// errTargets marks a doctor --expect-targets mismatch.
+var errTargets = errors.New("target count mismatch")
+
 
 var opts struct {
 	url           string
@@ -66,6 +69,7 @@ func NewRoot() *cobraRoot {
 
 	cmd.AddCommand(newToolsCmd())
 	cmd.AddCommand(newCallCmd())
+	cmd.AddCommand(newDoctorCmd())
 	root.cmd = cmd
 	return root
 }
@@ -88,6 +92,9 @@ func Execute() int {
 		}
 		if errors.Is(err, context.DeadlineExceeded) {
 			return ExitTimeout
+		}
+		if errors.Is(err, errTargets) {
+			return ExitTargets
 		}
 		if errors.Is(err, errProtocol) {
 			return ExitProtocol

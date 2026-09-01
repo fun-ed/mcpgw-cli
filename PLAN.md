@@ -63,7 +63,8 @@ agwctl call NAME [--arg k=v]... [--json '{...}'|@file.json]
 agwctl call --stdin                    batch：stdin 每行一個 {"name","arguments"}，
                                        每行回一個 result，整個 batch 只 initialize 一次
 agwctl doctor [--expect-targets N]     gateway 可達性、initialize 延遲、
-                                       每 target tool 數、異常提示
+                                       每 target tool 數、異常提示；永遠活取，
+                                       不吃 tool-list cache
 ```
 
 ### 輸出契約（最重要的一條）
@@ -222,7 +223,7 @@ Baseline 已量，閘門已過。這些是 M1 之後所有量測的對照組：
 | M0 | baseline 量測 | 已完成（§7），優先序已驗證 |
 | M1 | module 骨架、gw client、`tools list`（含 `--json`、`--target`） | **完成 2026-09-01**：8 targets / 70 tools 與 `agw-mcp.py verify` 一致；協商結果 `2025-06-18`；`go vet`、`go test ./...` 乾淨；開發在 `.worktrees/` worktree 進行 |
 | M2 | `search`、`describe`、`call` 全套 flag（含 `--stdin` batch） | **完成 2026-09-01**：對 deepwiki、duckduckgo 實際 call 成功（含 `--jq '.content[0].text'`）；截斷標記運作；batch 兩請求一 session JSONL 輸出；`--out` 輸出 jq-able JSON；search 命中快取 0.024s；scoring／cache／out 單元測試齊 |
-| M3 | `doctor`、安裝文件、真實 cutover | `doctor` 全綠 exit 0，`--expect-targets 8` 不符時 exit 6；README.md 增加一小節指向本文件；SKILL.md 草稿（find → describe → call，加多步流程改單一 bash script 的指引）；**至少一個 harness 真的切過去**：移除 `mcpServers.agentgateway`、agwctl 加入該 harness 的 shell 允許清單（否則每次 tool call 要人工核准）、完成一項真實任務，並量測 §7 對照組 |
+| M3 | `doctor`、安裝文件、真實 cutover | **doctor 完成 2026-09-01**：全綠 exit 0；`--expect-targets` 不符 exit 6；`--json` 結構化報告；活 gateway 實測當晚 ref-context upstream 500，doctor 正確回報 7/8 targets、68 tools 並 exit 6（agw-mcp.py verify 同步證實是 upstream 問題）。協商版本在 `2025-06-18` 與 `2025-11-25` 之間浮動（皆為 legacy stateful，相容）。剩餘：gateway README 指引小節、真實 cutover |
 
 完成定義：不改 `conf/config.yaml`、不動 docker-compose；gateway 的 `verify` 與 `smoke` 行為不受影響；macOS arm64 單一 binary；`go build -o ~/go/bin/agwctl ./cmd/agwctl` 可安裝。
 
