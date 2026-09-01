@@ -8,6 +8,15 @@ description: Resolve and call MCP tools through the agwctl shell client instead 
 `agwctl` talks to the local agentgateway (`http://127.0.0.1:8083/mcp`, 8 targets,
 ~70 tools). Resolve tools at call time; never keep schemas in context.
 
+## Availability
+
+The binary lives at `~/go/bin/agwctl`; the PATH entry comes from `~/.zshrc`
+(added 2026-09-02). Harnesses launched from a GUI shell may not have it, so
+fall back to the full path. The direct `agentgateway` MCP entry was dropped
+from every harness the same day (`mcp-sync.py --drop agentgateway`); this CLI
+is the only access path, and `mcp__agentgateway__*` tools in old sessions are
+stale.
+
 ## The three-step flow
 
 ```bash

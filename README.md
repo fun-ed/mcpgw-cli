@@ -34,6 +34,10 @@ upstream 都把整體壓在 legacy。agwctl 跟著協商結果走，client 端�
 go build -o ~/go/bin/agwctl ./cmd/agwctl
 ```
 
+`~/go/bin` 要在 PATH 上，bare `agwctl` 才找得到。2026-09-02 已在 `~/.zshrc`
+加 `export PATH="$HOME/go/bin:$PATH"`。GUI 啟動的 harness 沒載入 `.zshrc`，
+改用完整路徑 `~/go/bin/agwctl`。
+
 Gateway 本機無 auth，`agwctl` 不需要任何 token。endpoint 預設
 `http://127.0.0.1:8083/mcp`，可用 `--url` 或 `AGWCTL_URL` 覆蓋。
 
