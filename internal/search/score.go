@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"agwctl/internal/gw"
+	"github.com/fun-ed/mcpgw-cli/internal/gw"
 )
 
 // Field weights per PLAN.md section 4. Each field counts at most once, so a

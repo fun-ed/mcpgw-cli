@@ -5,7 +5,7 @@
 | 狀態 | v0.1 定稿（含 M0 實測與 Opus-5 judge 審查），未開工 |
 | 日期 | 2026-09-01 |
 | 語言 | Go 1.26.x（目前最新 patch go1.26.7，2026-08-19） |
-| 位置 | `~/temp/agentgateway/agwctl/`（獨立 Go module，不動 gateway 設定） |
+| 位置 | `~/temp/agentgateway/agwctl/`，遠端 `github.com/fun-ed/mcpgw-cli`（私有） |
 | 對象 | `http://127.0.0.1:8083/mcp`，8 targets，約 70 tools |
 
 本文件是 agwctl 的 single source of truth。實做時以此為準；行為有變先改這裡。
@@ -169,7 +169,7 @@ agwctl call target_get_query_result --arg id="$ID" --max-chars 8000
 
 ```text
 agwctl/
-  go.mod                 module agwctl / go 1.26
+  go.mod                 module github.com/fun-ed/mcpgw-cli / go 1.26（binary 仍叫 agwctl）
   cmd/agwctl/main.go
   internal/cli/          cobra 指令定義（tools, call, doctor）
   internal/gw/           SDK 包一層：connect, listTools, callTool, close

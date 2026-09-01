@@ -11,8 +11,8 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
 
-	"agwctl/internal/gw"
-	"agwctl/internal/out"
+	"github.com/fun-ed/mcpgw-cli/internal/gw"
+	"github.com/fun-ed/mcpgw-cli/internal/out"
 )
 
 func newCallCmd() *cobra.Command {

@@ -3,7 +3,7 @@ package search
 import (
 	"testing"
 
-	"agwctl/internal/gw"
+	"github.com/fun-ed/mcpgw-cli/internal/gw"
 )
 
 func row(name, desc string) gw.ToolRow {

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"agwctl/internal/cli"
+	"github.com/fun-ed/mcpgw-cli/internal/cli"
 )
 
 func main() {

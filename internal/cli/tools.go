@@ -11,8 +11,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"agwctl/internal/gw"
-	"agwctl/internal/search"
+	"github.com/fun-ed/mcpgw-cli/internal/gw"
+	"github.com/fun-ed/mcpgw-cli/internal/search"
 )
 
 var gwErrConnect = gw.ErrConnect
