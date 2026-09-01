@@ -10,9 +10,11 @@ description: Resolve and call MCP tools through the agwctl shell client instead 
 
 ## Availability
 
-The binary lives at `~/go/bin/agwctl`; the PATH entry comes from `~/.zshrc`
-(added 2026-09-02). Harnesses launched from a GUI shell may not have it, so
-fall back to the full path. The direct `agentgateway` MCP entry was dropped
+The binary lives at `~/go/bin/agwctl`; `/usr/local/bin/agwctl` is a symlink
+to it (added 2026-09-02), so bare `agwctl` resolves in every shell, including
+harnesses launched from a GUI. Rebuild with
+`go build -o ~/go/bin/agwctl ./cmd/agwctl` and both paths update together.
+The direct `agentgateway` MCP entry was dropped
 from every harness the same day (`mcp-sync.py --drop agentgateway`); this CLI
 is the only access path, and `mcp__agentgateway__*` tools in old sessions are
 stale.

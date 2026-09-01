@@ -13,8 +13,11 @@ cd ~/temp/agentgateway && ./agw-mcp.py verify
 - cache 只含 name/target/description，schema 永遠活取，不會有 schema 腐爛問題
 - harness 端自 2026-09-02 cutover 起不再掛 `agentgateway` MCP；唯一存取路徑是
   本 CLI。舊 session 的 `mcp__agentgateway__*` 是遺留，不要依賴
-- bare `agwctl` 出現 `command not found`：`~/go/bin` 不在 PATH（GUI 啟動的
-  harness 常見），改用完整路徑；PATH 來源是 `~/.zshrc`（2026-09-02 加入）
+- `agwctl` 裝在 `/usr/local/bin`（symlink 指向 `~/go/bin/agwctl`，2026-09-02
+  建立），全部 shell 含 GUI 啟動的 harness 都找得到；rebuild 只寫
+  `~/go/bin/agwctl`，symlink 自動跟上
+- bare `agwctl` 出現 `command not found`：先查 `/usr/local/bin/agwctl` symlink
+  還在不在，斷了就重建 `sudo ln -s "$HOME/go/bin/agwctl" /usr/local/bin/agwctl`
 
 ## agentgateway 升級時
 
