@@ -1,2 +1,2 @@
 agwctl
-.worktrees/
+.worktrees/*.log
