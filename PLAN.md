@@ -119,6 +119,8 @@ SDK 的 `StreamableClientTransport` 自己管理 session id，沒有公開的「
 
 實測：sidecar 溫機後 initialize 0.48s（2026-09-01，對活 gateway）。單次呼叫付 0.5s 可接受；`doctor` 持續量測並回報，若劣化再評估 thin client 與跨 process session 重用（v0.2）。DELETE 照 README 規則送（batch 送一次）。
 
+M1 追加實測：go-sdk 預設在 initialize 後開一條 standalone SSE GET stream，對這個 gateway 要 12s 才完成連線；CLI 不需要 server-initiated 訊息，設 `DisableStandaloneSSE: true` 後單次執行降到約 3s。gateway 的每請求 fanout floor 約 0.5s（raw 協議四步：initialize 0.5s、initialized 0.5s、tools/list 0.6s、DELETE 0.4s）。
+
 ### 搜尋：tokenized lexical scoring，約 60 行，零依賴
 
 ```text
@@ -206,7 +208,8 @@ Baseline 已量，閘門已過。這些是 M1 之後所有量測的對照組：
 | 改善前：70 tools 完整 schema | 40,740 chars ≈ 10.2k tokens | 每個 session 每個 turn 都背 |
 | 改善前：70 tools 描述 | 33,826 chars ≈ 8.5k tokens | 同上 |
 | 改善前合計 | ≈ 18.6k tokens / session | 本專案的目標數字 |
-| `tools list` 無 schema 版 | 6,579 chars ≈ 1.6k tokens（一次性） | 約省 91% |
+| `tools list` 無 schema 版 | 6,653 bytes ≈ 1.7k tokens（一次性） | 約省 91%（M1 實測，與預估 6,579 一致） |
+| 單次執行延遲 | 約 3.0s（initialize 0.5s、fanout floor 每請求約 0.5s） | batch 模式（M2）消除多步重複成本 |
 | `tools search` top 5 | 預估 < 150 tokens | 實做後複測 |
 | `call --max-chars` 截斷 | 對大回應 target 測試 | 實做後驗證截斷標記 |
 
@@ -215,7 +218,7 @@ Baseline 已量，閘門已過。這些是 M1 之後所有量測的對照組：
 | 階段 | 內容 | 驗收條件 |
 |---|---|---|
 | M0 | baseline 量測 | 已完成（§7），優先序已驗證 |
-| M1 | module 骨架、gw client、`tools list`（含 `--json`、`--target`） | 對活 gateway 執行，target 數與 tool 數和 `./agw-mcp.py verify` 一致（8 targets）；確認實際協商的 protocol version；`go vet`、`go test ./...` 乾淨 |
+| M1 | module 骨架、gw client、`tools list`（含 `--json`、`--target`） | **完成 2026-09-01**：8 targets / 70 tools 與 `agw-mcp.py verify` 一致；協商結果 `2025-06-18`；`go vet`、`go test ./...` 乾淨；開發在 `.worktrees/` worktree 進行 |
 | M2 | `search`、`describe`、`call` 全套 flag（含 `--stdin` batch） | scoring 單元測試；對 deepwiki、duckduckgo 等唯讀 target 實際 call 成功；`--jq`、截斷、batch 運作；`examples/` 範本實跑 |
 | M3 | `doctor`、安裝文件、真實 cutover | `doctor` 全綠 exit 0，`--expect-targets 8` 不符時 exit 6；README.md 增加一小節指向本文件；SKILL.md 草稿（find → describe → call，加多步流程改單一 bash script 的指引）；**至少一個 harness 真的切過去**：移除 `mcpServers.agentgateway`、agwctl 加入該 harness 的 shell 允許清單（否則每次 tool call 要人工核准）、完成一項真實任務，並量測 §7 對照組 |
 
