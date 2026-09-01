@@ -65,6 +65,7 @@ agwctl call --stdin                    batch：stdin 每行一個 {"name","argum
 agwctl doctor [--expect-targets N]     gateway 可達性、initialize 延遲、
                                        每 target tool 數、異常提示；永遠活取，
                                        不吃 tool-list cache
+agwctl version                         印 ClientVersion 與 GitHub repo URL
 ```
 
 ### 輸出契約（最重要的一條）
@@ -88,7 +89,7 @@ agwctl doctor [--expect-targets N]     gateway 可達性、initialize 延遲、
 | 1 | tool 回 `isError`；錯誤內容照印 stdout，agent 要讀它自我修正 |
 | 2 | 參數用法錯誤 |
 | 3 | gateway 不可達或 initialize 失敗 |
-| 4 | 逾時（`--timeout`，預設 120s；doctor 對 up-check 用 10s） |
+| 4 | 逾時（`--timeout`，預設 300s；doctor 對 up-check 用 10s） |
 | 5 | 執行中的 transport / protocol 錯誤（非 tool 錯誤），script 該重試或回報 |
 | 6 | `doctor --expect-targets` 檢查不符 |
 
@@ -192,7 +193,7 @@ agwctl/
 ```go
 // internal/gw/client.go
 func Connect(ctx context.Context, url string, timeout time.Duration) (*Client, error) {
-    impl := &mcp.Implementation{Name: "agwctl", Version: "0.1.0"}
+    impl := &mcp.Implementation{Name: "agwctl", Version: "0.2.0"}
     c := mcp.NewClient(impl, nil)
     tr := &mcp.StreamableClientTransport{Endpoint: url}
     sc, err := c.Connect(ctx, tr) // SDK 內部做 initialize、協商版本

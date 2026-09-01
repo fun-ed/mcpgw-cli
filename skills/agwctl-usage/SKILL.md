@@ -55,7 +55,7 @@ name. `--limit N` widens the net; an empty result means no tool fits.
 | 1 | tool returned isError; the error text is on stdout, read and self-correct |
 | 2 | usage error |
 | 3 | gateway unreachable or initialize failed |
-| 4 | timeout (`--timeout`, default 120s) |
+| 4 | timeout (`--timeout`, default 300s) |
 | 5 | transport/protocol failure; retry or report |
 
 ## Multi-step workflows

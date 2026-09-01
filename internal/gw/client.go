@@ -10,7 +10,7 @@ import (
 
 const (
 	ClientName    = "agwctl"
-	ClientVersion = "0.1.0"
+	ClientVersion = "0.2.0"
 )
 
 // ErrConnect marks failures during transport setup or the initialize handshake.
@@ -37,7 +37,7 @@ func Connect(ctx context.Context, url string, timeout time.Duration) (*Client, e
 // ConnectTransport is the testable core of Connect.
 func ConnectTransport(ctx context.Context, tr mcp.Transport, timeout time.Duration) (*Client, error) {
 	if timeout <= 0 {
-		timeout = 120 * time.Second
+		timeout = 300 * time.Second
 	}
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	client := mcp.NewClient(&mcp.Implementation{Name: ClientName, Version: ClientVersion}, nil)

@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/fun-ed/mcpgw-cli/internal/gw"
 	"github.com/spf13/cobra"
 )
 
@@ -72,14 +73,17 @@ func NewRoot() *cobraRoot {
 		return fmt.Errorf("%w: %v", errUsage, err)
 	})
 	cmd.PersistentFlags().StringVar(&opts.url, "url", envOr("AGWCTL_URL", "http://127.0.0.1:8083/mcp"), "gateway MCP endpoint")
-	cmd.PersistentFlags().StringVar(&opts.timeoutRaw, "timeout", "120s", "initialize and call timeout; plain number means seconds")
+	cmd.PersistentFlags().StringVar(&opts.timeoutRaw, "timeout", "300s", "initialize and call timeout; plain number means seconds")
 	cmd.PersistentFlags().IntVar(&opts.expectTargets, "expect-targets", 8, "warn when fewer targets answer (0 disables)")
 	cmd.PersistentFlags().BoolVar(&opts.refresh, "refresh", false, "bypass the tool-list cache and refetch")
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "log protocol details to stderr")
+	cmd.Version = gw.ClientVersion
+	cmd.SetVersionTemplate("agwctl {{.Version}}\nhttps://github.com/fun-ed/mcpgw-cli\n")
 
 	cmd.AddCommand(newToolsCmd())
 	cmd.AddCommand(newCallCmd())
 	cmd.AddCommand(newDoctorCmd())
+	cmd.AddCommand(newVersionCmd())
 	root.cmd = cmd
 	return root
 }
