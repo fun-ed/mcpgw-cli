@@ -75,7 +75,9 @@ agwctl doctor [--expect-targets N]     gateway 可達性、initialize 延遲、
 - `call --json` 是例外：印完整 MCP `CallToolResult` 的 compact JSON。這是給 script 串接用的原始形狀，`--jq` 就作用在這份 JSON 上。
 - 處理順序固定：`raw CallToolResult → --jq → --max-chars → --out/stdout`。`--jq` 隱含 JSON 語意；`isError` 時 `--jq` 不執行，原樣輸出錯誤，避免 `.content[0].text` 靜默取到錯誤字串。
 - `--max-chars` 預設 20000，超過就截斷，結尾補一行截斷說明。`0` 表示不限制。**不作用在 `--json` 上**（截 compact JSON 會出非法 JSON）；`--json` 要限量用 `--jq` 或 `--out` 落盤。
-- `--out FILE` 把完整結果寫進檔案，stdout 只印路徑和 byte 數，讓 shell/jq 接手。
+- `--out FILE` 把完整結果寫進檔案，stdout 只印路徑和 byte 數：有 `--jq` 時寫 post-jq 內容，沒有時寫 raw CallToolResult JSON，下游 jq 一定吃得動。
+- `call --jq .` 就是 raw result JSON 模式，腳本串接用這個。
+- `call --stdin` batch 輸出 JSONL，每行一個 CallToolResult；batch 忽略 `--max-chars` 與 `--jq` 並往 stderr 警告（腳本自己 pipe jq）。transport 錯誤中止 batch、exit 5；單行 isError 不中止，全部跑完後 exit 1。
 
 ### Exit codes
 
@@ -219,7 +221,7 @@ Baseline 已量，閘門已過。這些是 M1 之後所有量測的對照組：
 |---|---|---|
 | M0 | baseline 量測 | 已完成（§7），優先序已驗證 |
 | M1 | module 骨架、gw client、`tools list`（含 `--json`、`--target`） | **完成 2026-09-01**：8 targets / 70 tools 與 `agw-mcp.py verify` 一致；協商結果 `2025-06-18`；`go vet`、`go test ./...` 乾淨；開發在 `.worktrees/` worktree 進行 |
-| M2 | `search`、`describe`、`call` 全套 flag（含 `--stdin` batch） | scoring 單元測試；對 deepwiki、duckduckgo 等唯讀 target 實際 call 成功；`--jq`、截斷、batch 運作；`examples/` 範本實跑 |
+| M2 | `search`、`describe`、`call` 全套 flag（含 `--stdin` batch） | **完成 2026-09-01**：對 deepwiki、duckduckgo 實際 call 成功（含 `--jq '.content[0].text'`）；截斷標記運作；batch 兩請求一 session JSONL 輸出；`--out` 輸出 jq-able JSON；search 命中快取 0.024s；scoring／cache／out 單元測試齊 |
 | M3 | `doctor`、安裝文件、真實 cutover | `doctor` 全綠 exit 0，`--expect-targets 8` 不符時 exit 6；README.md 增加一小節指向本文件；SKILL.md 草稿（find → describe → call，加多步流程改單一 bash script 的指引）；**至少一個 harness 真的切過去**：移除 `mcpServers.agentgateway`、agwctl 加入該 harness 的 shell 允許清單（否則每次 tool call 要人工核准）、完成一項真實任務，並量測 §7 對照組 |
 
 完成定義：不改 `conf/config.yaml`、不動 docker-compose；gateway 的 `verify` 與 `smoke` 行為不受影響；macOS arm64 單一 binary；`go build -o ~/go/bin/agwctl ./cmd/agwctl` 可安裝。

@@ -74,6 +74,11 @@ func (c *Client) ListTools(ctx context.Context) ([]*mcp.Tool, error) {
 	}
 }
 
+// CallTool invokes one tool. args must marshal to a JSON object.
+func (c *Client) CallTool(ctx context.Context, name string, args any) (*mcp.CallToolResult, error) {
+	return c.session.CallTool(ctx, &mcp.CallToolParams{Name: name, Arguments: args})
+}
+
 func (c *Client) Close() error {
 	err := c.session.Close()
 	c.cancel()

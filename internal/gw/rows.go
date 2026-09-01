@@ -1,4 +1,4 @@
-package cli
+package gw
 
 import (
 	"strings"
@@ -8,7 +8,7 @@ import (
 
 const descCap = 100
 
-// ToolRow is the minimal per-tool record exposed by list and search output.
+// ToolRow is the minimal per-tool record shared by list, search and describe.
 type ToolRow struct {
 	Name        string `json:"name"`
 	Target      string `json:"target"`
@@ -16,7 +16,7 @@ type ToolRow struct {
 }
 
 // Rows converts gateway tools into output records. The gateway prefixes tool
-// names with the target name and an underscore; tools without that shape keep
+// names with the target name and an underscore; names without that shape keep
 // an empty target.
 func Rows(tools []*mcp.Tool) []ToolRow {
 	rows := make([]ToolRow, 0, len(tools))
@@ -28,7 +28,7 @@ func Rows(tools []*mcp.Tool) []ToolRow {
 		rows = append(rows, ToolRow{
 			Name:        t.Name,
 			Target:      target,
-			Description: Trunc(FirstLine(t.Description), 100),
+			Description: strings.TrimSpace(FirstLine(t.Description)),
 		})
 	}
 	return rows
@@ -39,11 +39,4 @@ func FirstLine(s string) string {
 		s = s[:i]
 	}
 	return strings.TrimSpace(s)
-}
-
-func Trunc(s string, n int) string {
-	if len(s) <= n {
-		return s
-	}
-	return s[:n]
 }

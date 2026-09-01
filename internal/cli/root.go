@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -27,11 +28,18 @@ var errUsage = errors.New("usage error")
 // errProtocol marks failures after a session is established.
 var errProtocol = errors.New("gateway call failed")
 
+// errToolResult marks a completed call whose result isError.
+var errToolResult = errors.New("tool returned an error")
+
+
 var opts struct {
 	url           string
 	timeout       time.Duration
 	expectTargets int
 	verbose       bool
+	refresh       bool
+	maxChars      int
+	jqExpr        string
 }
 
 func NewRoot() *cobraRoot {
@@ -52,10 +60,12 @@ func NewRoot() *cobraRoot {
 	}
 	cmd.PersistentFlags().StringVar(&opts.url, "url", envOr("AGWCTL_URL", "http://127.0.0.1:8083/mcp"), "gateway MCP endpoint")
 	cmd.PersistentFlags().DurationVar(&opts.timeout, "timeout", 120*time.Second, "initialize and call timeout")
-	cmd.PersistentFlags().IntVar(&opts.expectTargets, "expect-targets", 8, "warn and fail doctor when fewer targets answer (0 disables)")
+	cmd.PersistentFlags().IntVar(&opts.expectTargets, "expect-targets", 8, "warn when fewer targets answer (0 disables)")
+	cmd.PersistentFlags().BoolVar(&opts.refresh, "refresh", false, "bypass the tool-list cache and refetch")
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "log protocol details to stderr")
 
 	cmd.AddCommand(newToolsCmd())
+	cmd.AddCommand(newCallCmd())
 	root.cmd = cmd
 	return root
 }
@@ -70,8 +80,14 @@ func Execute() int {
 		if errors.Is(err, errUsage) {
 			return ExitUsage
 		}
+		if errors.Is(err, errToolResult) {
+			return ExitToolErr
+		}
 		if errors.Is(err, gwErrConnect) {
 			return ExitConnect
+		}
+		if errors.Is(err, context.DeadlineExceeded) {
+			return ExitTimeout
 		}
 		if errors.Is(err, errProtocol) {
 			return ExitProtocol
