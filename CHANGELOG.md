@@ -3,6 +3,20 @@
 All notable changes to this project are documented in this file. The format
 follows Keep a Changelog; versions follow SemVer.
 
+## [0.2.1] - 2026-10-13
+
+### Changed
+
+- `github.com/modelcontextprotocol/go-sdk` 1.7.0 → 1.8.0: bounded SSE event and
+  JSON nesting reads, non-blocking cancel notification, session teardown fixes.
+  The negotiated protocol is unchanged (`2025-11-25`).
+- MCP initialize identity reports `agwctl/0.2.1`.
+- Verified against agentgateway v1.6.0 (stable), which paginates MCP list
+  results; `tools list` already follows `nextCursor`, so all 76 tools on the
+  8-target gateway are returned.
+- Docs: to see every tool of one target, use `tools list --target <name>`;
+  `tools search` returns the top 5 by default and is not a registry listing.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added

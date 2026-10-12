@@ -34,7 +34,9 @@ agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
 ```
 
 `tools search` results carry a lexical score. Higher is better; ties break by
-name. `--limit N` widens the net; an empty result means no tool fits.
+name. `--limit N` widens the net; an empty result means no tool fits. Search
+is not a registry listing: to see every tool of one target, run
+`agwctl tools list --target <target>`.
 
 ## Calling
 
