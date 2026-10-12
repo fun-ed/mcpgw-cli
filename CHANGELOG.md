@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file. The format
 follows Keep a Changelog; versions follow SemVer.
 
+## [0.2.2] - 2026-10-13
+
+### Changed
+
+- Dependencies: `golang.org/x/sys` 0.49.0, `golang.org/x/oauth2` 0.37.0,
+  `golang.org/x/sync` 0.24.0, `golang.org/x/time` 0.16.0, `spf13/pflag`
+  1.0.10, `segmentio/asm` 1.2.1, `itchyny/timefmt-go` 0.1.9. `govulncheck`
+  reports no vulnerabilities.
+- MCP initialize identity reports `agwctl/0.2.2`.
+- Releases now attach prebuilt `darwin`/`linux` `amd64`/`arm64` archives and
+  `SHA256SUMS`.
+
 ## [0.2.1] - 2026-10-13
 
 ### Changed
