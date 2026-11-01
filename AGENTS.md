@@ -29,8 +29,9 @@ Instructions for AI agents working in this repository.
 - Surgical changes only. Zero comments unless explaining a why.
 - Dependencies: stdlib first, pinned versions, one-line reason in PLAN.md §5.
 - Output contract (PLAN.md §3): stdout carries data only, logs go to stderr;
-  `--json` output stays minimal; `--max-chars` never cuts JSON; a tool
-  `isError` prints its content and exits 1; `--jq` is skipped on isError.
+  `--json` output stays minimal; successful `--jq` output is not truncated.
+  Default text output observes `--max-chars`; tool `isError` prints content
+  and exits 1; `--jq` is skipped on isError.
 - Exit codes: 0 ok, 1 tool error, 2 usage, 3 connect, 4 timeout, 5 protocol,
   6 doctor target mismatch.
 

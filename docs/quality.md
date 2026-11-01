@@ -38,7 +38,7 @@ printf '%s\n' '{"name":"deepwiki_read_wiki_structure","arguments":{"repoName":"a
 1. stdout 純淨：資料才進 stdout，log 一律 stderr
 2. exit code 契約沒被打破（0/1/2/3/4/5/6）
 3. `--json` 仍是最小形狀
-4. `--max-chars` 不作用在 JSON；`--out` 寫的東西下游 jq 吃得動
+4. 成功的 `--jq` JSON／JSONL 輸出不截斷；預設文字模式仍有上限；`--out` 寫的東西下游 jq 吃得動
 5. 快取仍只含 name/target/description
 6. `PLAN.md` 先改、code 後改
 7. `skills/` 與 `AGENTS.md` 同步（行為變更時）

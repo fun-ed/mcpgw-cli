@@ -47,7 +47,7 @@ Gateway 本機無 auth，`agwctl` 不需要任何 token。endpoint 預設
 agwctl tools search "search the web"          # top 5，~100 tokens
 agwctl tools describe brave-search_web_search # 只印這個 tool 的 inputSchema
 agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
-    --jq '.content[0].text' --max-chars 4000  # 只要結果，不要整坨
+    --jq '.content[0].text[:4000]'  # 在 jq 中控制文字大小
 ```
 
 多步流程（輪詢、分頁）寫成一段 shell script 在一個 Bash tool call 內跑完，
@@ -88,7 +88,7 @@ agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
 | `tools search` top 5 | < 150 tokens；快取命中 0.024s | 快取 TTL 10 分鐘 |
 | `tools list`（一次性） | 6,653 bytes ≈ 1.7k tokens | 約省 91% |
 | `tools describe` | 只付該 tool 的 schema | 唯一需要 schema 的時候 |
-| `call --jq/--max-chars` | 預設輸出上界 20,000 chars | deepwiki 3k 字答案只取需要的段 |
+| `call` 文字模式 | 預設輸出上界 20,000 chars | `--jq` 輸出完整；用欄位選取或切片控制大小 |
 | 單次執行延遲 | 約 3s | initialize 0.5s + gateway fanout floor 約 0.5s/請求 |
 
 ### Cutover 記錄（2026-09-01）

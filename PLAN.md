@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| 狀態 | v0.1 定稿（含 M0 實測與 Opus-5 judge 審查），未開工 |
-| 日期 | 2026-09-01 |
+| 狀態 | v0.2.3；修正 CLI 的 jq 輸出截斷，保留預設文字上限 |
+| 日期 | 2026-11-01 |
 | 語言 | Go 1.26.x（目前最新 patch go1.26.7，2026-08-19） |
 | 位置 | `~/temp/agentgateway/agwctl/`，遠端 `github.com/fun-ed/mcpgw-cli`（私有） |
 | 對象 | `http://127.0.0.1:8083/mcp`，8 targets，約 70 tools |
@@ -76,7 +76,7 @@ agwctl version                         印 ClientVersion 與 GitHub repo URL
 - `--json` 輸出最小 JSON：`tools list` 給 `{"name","target","description"}`，`search` 加 `{"score"}`。絕不順手帶 inputSchema、annotations、_meta。
 - `call --json` 是例外：印完整 MCP `CallToolResult` 的 compact JSON。這是給 script 串接用的原始形狀，`--jq` 就作用在這份 JSON 上。
 - 處理順序固定：`raw CallToolResult → --jq → --max-chars → --out/stdout`。`--jq` 隱含 JSON 語意；`isError` 時 `--jq` 不執行，原樣輸出錯誤，避免 `.content[0].text` 靜默取到錯誤字串。
-- `--max-chars` 預設 20000，超過就截斷，結尾補一行截斷說明。`0` 表示不限制。**不作用在 `--json` 上**（截 compact JSON 會出非法 JSON）；`--json` 要限量用 `--jq` 或 `--out` 落盤。
+- `--max-chars` 預設 20000，作用在預設文字模式，即使工具回傳的是 JSON 文字仍截斷並補說明；`0` 表示不限制。成功的 `--jq` 輸出不截斷，以保留 JSON／JSONL；`isError` 仍走文字模式。用 `--jq` 選欄位或切片控制結果大小，或用 `--out` 落盤。
 - `--out FILE` 把完整結果寫進檔案，stdout 只印路徑和 byte 數：有 `--jq` 時寫 post-jq 內容，沒有時寫 raw CallToolResult JSON，下游 jq 一定吃得動。
 - `call --jq .` 就是 raw result JSON 模式，腳本串接用這個。
 - `call --stdin` batch 輸出 JSONL，每行一個 CallToolResult；batch 忽略 `--max-chars` 與 `--jq` 並往 stderr 警告（腳本自己 pipe jq）。transport 錯誤中止 batch、exit 5；單行 isError 不中止，全部跑完後 exit 1。

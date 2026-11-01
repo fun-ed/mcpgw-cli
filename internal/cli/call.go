@@ -147,6 +147,9 @@ func runCall(ctx context.Context, name string, argKVs []string, jsonArgs, jqExpr
 		}
 		fmt.Fprintf(os.Stdout, "wrote %s (%d bytes)\n", outFile, len(fileBody))
 	} else {
+		if jqExpr != "" && !res.IsError {
+			maxChars = 0
+		}
 		fmt.Fprintln(os.Stdout, out.Truncate(stdoutBody, maxChars))
 	}
 	if res.IsError {
@@ -260,4 +263,3 @@ func applyJQ(res *mcp.CallToolResult, expr string) (string, error) {
 	}
 	return strings.Join(lines, "\n"), nil
 }
-

@@ -30,7 +30,7 @@ agwctl tools describe brave-search_brave_web_search
 
 # 3. call it, shaped for the context budget
 agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
-    --jq '.content[0].text' --max-chars 4000
+    --jq '.content[0].text[:4000]'
 ```
 
 `tools search` results carry a lexical score. Higher is better; ties break by
@@ -46,8 +46,9 @@ is not a registry listing: to see every tool of one target, run
   (mutually exclusive with `--arg`)
 - `--jq EXPR` runs over the raw CallToolResult; `--jq .` dumps the whole
   result as JSON for scripts; skipped when the tool returns isError
-- `--max-chars` (default 20000) truncates text output with a marker; `0`
-  disables; JSON output is never cut
+- `--max-chars` (default 20000) limits default text output, even when the tool
+  returns JSON as text; `0` disables. Successful `--jq` output is never cut.
+  Select fields or slice strings in `--jq`, or use `--out`, to limit context.
 - `--out file.json` writes the full result (raw CallToolResult JSON unless
   `--jq` is set) and prints only the path to stdout
 

@@ -3,6 +3,23 @@
 All notable changes to this project are documented in this file. The format
 follows Keep a Changelog; versions follow SemVer.
 
+## [0.2.3] - 2026-11-01
+
+### Fixed
+
+- 成功的 `call --jq` 輸出不再被 `--max-chars` 截斷，保留完整 JSON／JSONL。
+- 預設文字模式仍套用長度上限，包括工具回傳的 JSON 文字；工具錯誤仍略過 jq，
+  保留原本輸出模式與退出碼。
+
+### Changed
+
+- MCP initialize identity 與 CLI 版本更新為 `agwctl/0.2.3`。
+- 使用說明改以 jq 欄位選取或字串切片限制 jq 輸出大小。
+
+### Added
+
+- CLI 回歸測試涵蓋大型 JSON 文字、完整 jq JSON、JSONL 與工具錯誤。
+
 ## [0.2.2] - 2026-10-13
 
 ### Changed
