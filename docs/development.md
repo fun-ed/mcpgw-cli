@@ -7,8 +7,8 @@
 
 ## 環境
 
-- Go 1.26.x，`.tool-versions` 釘 `1.26.7`（mise 管理）
-- build：`go build -o agwctl ./cmd/agwctl`
+- 建置使用 mise 管理的 Go 1.27.3，由 `.tool-versions` 指定；module 最低相容 Go 1.26.7
+- build：`mise exec -- go build -o agwctl ./cmd/agwctl`
 - 本機 gateway：`http://127.0.0.1:8083/mcp`，屬於 `~/temp/agentgateway`
   workspace，不在本 repo；本 repo 不碰它的任何設定
 

@@ -3,7 +3,7 @@
 All notable changes to this project are documented in this file. The format
 follows Keep a Changelog; versions follow SemVer.
 
-## [0.2.3] - 2026-11-01
+## [0.2.3] - 2026-11-02
 
 ### Fixed
 
@@ -15,6 +15,9 @@ follows Keep a Changelog; versions follow SemVer.
 
 - MCP initialize identity 與 CLI 版本更新為 `agwctl/0.2.3`。
 - 使用說明改以 jq 欄位選取或字串切片限制 jq 輸出大小。
+- Patch 依賴更新：`github.com/itchyny/gojq` v0.12.19 → v0.12.20；
+  保留 MCP Go SDK v1.8.0 與 Cobra v1.10.2。
+- 以 mise Go 1.27.3 建置，更新專案 pin；module 最低相容版本保留 Go 1.26.7。
 
 ### Added
 

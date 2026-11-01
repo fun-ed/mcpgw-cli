@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | 狀態 | v0.2.3；修正 CLI 的 jq 輸出截斷，保留預設文字上限 |
-| 日期 | 2026-11-01 |
-| 語言 | Go 1.26.x（目前最新 patch go1.26.7，2026-08-19） |
+| 日期 | 2026-11-02 |
+| 語言 | 以 mise Go 1.27.3 建置；module 最低相容版本為 Go 1.26.7 |
 | 位置 | `~/temp/agentgateway/agwctl/`，遠端 `github.com/fun-ed/mcpgw-cli`（私有） |
 | 對象 | `http://127.0.0.1:8083/mcp`，8 targets，約 70 tools |
 
@@ -165,16 +165,16 @@ agwctl call target_get_query_result --arg id="$ID" --max-chars 8000
 
 兩條配套：MCP tool 幾乎不宣告 outputSchema，SKILL.md 要教「先做一次探測 call 看輸出形狀，再寫 jq」；可執行範本放 `examples/`，M2/M3 對唯讀 target 實跑過。這對 agwctl 的硬性要求：JSON 進 JSON 出、exit code 穩定、stdout 純淨，就是 §3 的輸出契約，不另立功能。`agwctl flow`、script runner、workflow 引擎全部 YAGNI，Bash 加 jq 就是那個 deterministic program。
 
-## 5. Module 與依賴（2026-09 實查版本）
+## 5. Module 與依賴（v0.2.3）
 
-查詢時間 2026-09-01，來源 proxy.golang.org：
+依 `.tool-versions` 與 `go.mod` 核對；patch 更新透過 proxy.golang.org 解析：
 
 | 依賴 | 版本 | 用途 |
 |---|---|---|
-| Go toolchain | go1.26.7 | 語言：`new(expr)`、Green Tea GC、`errors.AsType` |
-| `github.com/modelcontextprotocol/go-sdk` | v1.7.0 | MCP client（streamable HTTP） |
+| Go toolchain | go1.27.3 | mise 管理的建置版本；module 最低版本保留 Go 1.26.7 |
+| `github.com/modelcontextprotocol/go-sdk` | v1.8.0 | MCP client（streamable HTTP） |
 | `github.com/spf13/cobra` | v1.10.2 | CLI 子指令、flag |
-| `github.com/itchyny/gojq` | v0.12.19 | `--jq` 的純 Go jq engine |
+| `github.com/itchyny/gojq` | v0.12.20 | `--jq` 的純 Go jq engine |
 
 其餘全用 stdlib：`net/http`（SDK 內部也用它）、`encoding/json`、`log/slog`（stderr）、`os.UserCacheDir`。不做表格、不做顏色、不做 fuzzy 套件。
 

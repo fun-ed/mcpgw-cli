@@ -30,8 +30,8 @@ upstream 都把整體壓在 legacy。agwctl 跟著協商結果走，client 端�
 ## 安裝
 
 ```bash
-# Go 1.26.x，由 .tool-versions（mise）釘住
-go build -o ~/go/bin/agwctl ./cmd/agwctl
+# Go 1.27.3，由 .tool-versions（mise）釘住；module 最低相容 Go 1.26.7
+mise exec -- go build -o ~/go/bin/agwctl ./cmd/agwctl
 ```
 
 安裝後在 `/usr/local/bin` 放一個 symlink（2026-09-02 已做）：

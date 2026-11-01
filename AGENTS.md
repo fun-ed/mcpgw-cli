@@ -14,8 +14,8 @@ Instructions for AI agents working in this repository.
 
 ## Commands
 
-- Build: `go build -o agwctl ./cmd/agwctl` (Go 1.26.x, pinned in .tool-versions)
-- Quality gates: `go test ./...` and `go vet ./...` must be clean
+- Build: `mise exec -- go build -o agwctl ./cmd/agwctl` (Go 1.27.3, pinned in .tool-versions)
+- Quality gates: `mise exec -- go test ./...` and `mise exec -- go vet ./...` must be clean
 - Live check: `./agwctl tools list -v` must show 8 targets / 70 tools and the
   negotiated protocol version; then one read-only `call` against deepwiki or
   duckduckgo

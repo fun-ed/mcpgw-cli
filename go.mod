@@ -3,7 +3,7 @@ module github.com/fun-ed/mcpgw-cli
 go 1.26.7
 
 require (
-	github.com/itchyny/gojq v0.12.19
+	github.com/itchyny/gojq v0.12.20
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/spf13/cobra v1.10.2
 )

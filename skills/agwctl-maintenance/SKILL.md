@@ -9,11 +9,11 @@ description: Verify, upgrade or release the mcpgw-cli repo (agwctl). Use when as
 
 ```bash
 cd <repo-root-or-worktree>
-go build -o agwctl ./cmd/agwctl && go vet ./... && go test ./...
+mise exec -- go build -o agwctl ./cmd/agwctl && mise exec -- go vet ./... && mise exec -- go test ./...
 ```
 
 All three must pass before anything else. Go toolchain is pinned in
-`.tool-versions` (1.26.7, via mise).
+`.tool-versions` (1.27.3, via mise); the module minimum remains Go 1.26.7.
 
 ## Live checks against the gateway
 
