@@ -18,14 +18,22 @@ All three must pass before anything else. Go toolchain is pinned in
 ## Live checks against the gateway
 
 ```bash
+./agwctl help mcp                      # offline guide, no gateway required
+./agwctl doctor --expect-targets 8     # registry health only, not tool success
 ./agwctl tools list --json | jq 'group_by(.target) | map({(.[0].target): length}) | add'
 ./agwctl tools list -v                  # negotiated protocol version on stderr
 ./agwctl tools search "search"          # should be fast after the first run (cache)
 ./agwctl call deepwiki_read_wiki_structure --arg repoName=agentgateway/agentgateway --max-chars 300
+./agwctl tools describe duckduckgo-search_search
+./agwctl call duckduckgo-search_search --arg query="model context protocol" --arg max_results=2 --jq .
 ```
 
-Compare target and tool counts with `~/temp/agentgateway/agw-mcp.py verify`
-(8 targets / 70 tools as of 2026-09-01; remote capability may change).
+Compare target and tool counts with `mise exec -- python3 ~/temp/agentgateway/agw-mcp.py verify`
+(8 targets / 80 tools on 2026-11-08; remote capability may change). Inspect actual
+search result URLs; an isError-free no-results or rate-limit message is not a
+successful smoke check. tools/list, tools/describe and doctor are live; only
+tools/search uses the name/description cache. Run gateway smoke from its own
+directory with `mise exec -- python3 agw-mcp.py smoke`.
 
 ## After an agentgateway upgrade
 

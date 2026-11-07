@@ -3,12 +3,20 @@
 | | |
 |---|---|
 | 狀態 | v0.2.3；修正 CLI 的 jq 輸出截斷，保留預設文字上限 |
-| 日期 | 2026-11-02 |
+| 日期 | 2026-11-08 |
 | 語言 | 以 mise Go 1.27.3 建置；module 最低相容版本為 Go 1.26.7 |
 | 位置 | `~/temp/agentgateway/agwctl/`，遠端 `github.com/fun-ed/mcpgw-cli`（私有） |
-| 對象 | `http://127.0.0.1:8083/mcp`，8 targets，約 70 tools |
+| 對象 | `http://127.0.0.1:8083/mcp`，2026-11-08 驗證為 8 targets / 80 tools；數量隨 upstream 改變 |
 
 本文件是 agwctl 的 single source of truth。實做時以此為準；行為有變先改這裡。
+
+本次改善：新增可離線閱讀的 `agwctl help mcp`，補齊 tools、call、doctor help
+與可執行範例。工具名稱必須從 registry 取得；`tools search` 快取名稱與描述，
+`tools list`、`tools describe` 和 `doctor` 都是即時查詢。`doctor` 不執行工具，
+exit 0 不代表搜尋有結果或非同步操作已完成；成功與否仍須驗證回應與完成狀態。
+`call --json` 是輸入參數，完整輸出使用 `--jq .`；batch 輸出維持 raw JSONL。
+不改既有 MCP transport、輸出或 exit codes。驗收包含離線 help 測試、Go test/vet/build、
+活 gateway discovery、schema、實際搜尋與 JSONL batch，並同步 README 與 skills。
 
 ## 1. 為什麼要這個
 
@@ -43,10 +51,10 @@ Copilot CLI / Claude Code / Kiro / Codex / Devin
 
 ```text
 1. agwctl tools search "search the web"   →  top 5 名稱（~100 tokens）
-2. agwctl tools describe brave-search_web_search
+2. agwctl tools describe brave-search_brave_web_search
                                           →  只印這個 tool 的 inputSchema
-3. agwctl call brave-search_web_search --arg query="..." --jq '.content[0].text'
-                                          →  只印結果（可截斷）
+3. agwctl call brave-search_brave_web_search --arg query="..." --jq '.content[0].text[:4000]'
+                                          →  在 jq 明確限制文字大小
 ```
 
 單次呼叫是一個新 process：initialize → 動作 → DELETE；batch 模式同一個 process 只 initialize 一次（見 §4）。跟今天 `agw-mcp.py` 的行為一致，gateway 端不用任何改動。
@@ -74,7 +82,7 @@ agwctl version                         印 ClientVersion 與 GitHub repo URL
 - 錯誤分兩種，走不同出口：tool 自己回的 `isError` 是「工具的資料」，照印 stdout、exit 1，agent 要讀它自我修正；agwctl 層的 transport / protocol / gateway 錯誤走 stderr 一行 `agwctl: <kind>: <message>`、stdout 不出東西，exit code 分支（3/4/5）。不做 JSON error envelope，exit code 就是 script 的分支訊號。
 - 預設文字輸出給 agent 讀，格式用 tab 分隔欄位，不用表格框線（padding 浪費 token）。
 - `--json` 輸出最小 JSON：`tools list` 給 `{"name","target","description"}`，`search` 加 `{"score"}`。絕不順手帶 inputSchema、annotations、_meta。
-- `call --json` 是例外：印完整 MCP `CallToolResult` 的 compact JSON。這是給 script 串接用的原始形狀，`--jq` 就作用在這份 JSON 上。
+- `call --json` 接收輸入參數物件；完整 MCP `CallToolResult` 輸出使用 `call --jq .`。`tools list/search --json` 則是最小輸出形狀。
 - 處理順序固定：`raw CallToolResult → --jq → --max-chars → --out/stdout`。`--jq` 隱含 JSON 語意；`isError` 時 `--jq` 不執行，原樣輸出錯誤，避免 `.content[0].text` 靜默取到錯誤字串。
 - `--max-chars` 預設 20000，作用在預設文字模式，即使工具回傳的是 JSON 文字仍截斷並補說明；`0` 表示不限制。成功的 `--jq` 輸出不截斷，以保留 JSON／JSONL；`isError` 仍走文字模式。用 `--jq` 選欄位或切片控制結果大小，或用 `--out` 落盤。
 - `--out FILE` 把完整結果寫進檔案，stdout 只印路徑和 byte 數：有 `--jq` 時寫 post-jq 內容，沒有時寫 raw CallToolResult JSON，下游 jq 一定吃得動。
@@ -128,7 +136,7 @@ Fallback 路徑已驗證可行：`agw-mcp.py` 證明這個 gateway 只需要 `PO
 SDK 的 `StreamableClientTransport` 自己管理 session id，沒有公開的「帶入舊 session id」入口，跨 process session 快取做不乾淨。v0.1 的對策有兩個，都已足夠：
 
 - Batch 模式。`call --stdin` 在一個 process 內用同一個 session 跑 N 個請求，只 initialize 一次。Code Mode 迴圈要省 initialize 成本就改成一行一個 request 餵進 `--stdin`，控制流仍在 Bash。SDK 在單一 process 內跑多個 call 完全沒問題，這是「不換掉 SDK」的前提。
-- 工具清單快取。只快取 `name`、`target`、`description`（不含 schema），放 `os.UserCacheDir`，TTL 10 分鐘，`--refresh` 強制重取，`doctor` 永遠活取。`search`、`describe` 命中快取時不打 gateway；upstream 改名靠短 TTL 自癒，schema 永遠不落地所以不會腐爛。
+- 工具清單快取。只快取 `name`、`target`、`description`（不含 schema），放 `os.UserCacheDir`，TTL 10 分鐘，只有 `search` 使用；`--refresh` 強制重取。`list`、`describe`、`doctor` 永遠連線查詢，schema 不落地。
 
 實測：sidecar 溫機後 initialize 0.48s（2026-09-01，對活 gateway）。單次呼叫付 0.5s 可接受；`doctor` 持續量測並回報，若劣化再評估 thin client 與跨 process session 重用（v0.2）。DELETE 照 README 規則送（batch 送一次）。
 

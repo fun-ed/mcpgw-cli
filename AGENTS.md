@@ -5,20 +5,22 @@ Instructions for AI agents working in this repository.
 ## Project
 
 - mcpgw-cli is the Go repo for `agwctl`, a CLI client for the local
-  agentgateway (`http://127.0.0.1:8083/mcp`, 8 targets, ~70 tools). It replaces
+  agentgateway (`http://127.0.0.1:8083/mcp`, 8 targets / 80 tools verified on 2026-11-08; upstream counts vary). It replaces
   direct MCP integration: harnesses resolve and call tools through the shell,
   so tool schemas never live in session context.
 - Fits agentgateway v1.5.0+ legacy stateful streamable HTTP; the negotiated
-  protocol version is `2025-06-18` (see README "適配範圍").
+  protocol follows upstream negotiation (see README "適配範圍").
 - `PLAN.md` is the single source of truth. Change it before changing behavior.
 
 ## Commands
 
 - Build: `mise exec -- go build -o agwctl ./cmd/agwctl` (Go 1.27.3, pinned in .tool-versions)
 - Quality gates: `mise exec -- go test ./...` and `mise exec -- go vet ./...` must be clean
-- Live check: `./agwctl tools list -v` must show 8 targets / 70 tools and the
-  negotiated protocol version; then one read-only `call` against deepwiki or
-  duckduckgo
+- Live check: `./agwctl doctor --expect-targets 8` and `./agwctl tools list -v`
+  must agree with the live gateway; run an actual read-only search and inspect
+  result URLs. `doctor` and exit 0 alone do not prove useful tool results.
+- `./agwctl help mcp` must work offline. Help changes require the offline-help
+  tests and matching README/skills guidance; keep transport and exit codes stable.
 - The gateway itself lives outside this repo (`~/temp/agentgateway`). Never
   edit its `conf/config.yaml` or `docker-compose.yaml` from here.
 

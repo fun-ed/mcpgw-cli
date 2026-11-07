@@ -45,7 +45,7 @@ Gateway 本機無 auth，`agwctl` 不需要任何 token。endpoint 預設
 
 ```bash
 agwctl tools search "search the web"          # top 5，~100 tokens
-agwctl tools describe brave-search_web_search # 只印這個 tool 的 inputSchema
+agwctl tools describe brave-search_brave_web_search # 只印這個 tool 的 inputSchema
 agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
     --jq '.content[0].text[:4000]'  # 在 jq 中控制文字大小
 ```
@@ -53,11 +53,40 @@ agwctl call brave-search_brave_web_search --arg query="mcp gateway" \
 多步流程（輪詢、分頁）寫成一段 shell script 在一個 Bash tool call 內跑完，
 見 `examples/poll-query.sh` 與 `skills/agwctl-usage/SKILL.md`。
 
+離線操作指引：`agwctl help mcp`。個別旗標見 `agwctl call --help`、
+`agwctl tools --help` 與 `agwctl doctor --help`。範例名稱須以當下 registry 為準。
+
+`tools search` 快取名稱與描述 10 分鐘，`--refresh` 強制更新；`tools list`、
+`tools describe`、`doctor` 都連線查詢即時資料。查不到搜尋候選時，用
+`tools list --target <target>` 查看完整清單，不要自行猜名稱或舊 MCP prefix。
+
+`doctor` 只檢查連線、初始化與工具清單。`call` exit 0 只代表未收到 MCP `isError`；
+仍須檢查實際搜尋結果、限流訊息或非同步操作狀態。寫入逾時可能已執行，先核對
+返回的 operation ID 與目標內容，再決定是否重試。記憶寫入依各服務的核准流程操作。
+
+`call --json` 是輸入參數，與 `--arg` 互斥；取得完整 JSON 輸出用 `--jq .`。
+`--jq` 對原始 CallToolResult 求值，常用 `.content[0].text` 或 `.structuredContent`。
+成功的 jq 輸出不截斷，應自行選欄位或切片；`--out` 以 0600 權限儲存完整結果。
+
+```bash
+agwctl tools list --target duckduckgo-search
+agwctl tools describe duckduckgo-search_search
+agwctl call duckduckgo-search_search \
+  --json '{"query":"model context protocol","max_results":2}' --jq .
+printf '%s\n' '{"name":"openviking_health","arguments":{}}' \
+  | agwctl call --stdin --max-chars 0
+```
+
+Batch 使用一個 session，逐行輸出原始 JSONL；`--jq`、`--max-chars` 不作用於 batch。
+逐行 `isError` 不會中止後續請求，整批結束後 exit 1；transport 錯誤會中止整批，
+已完成的請求不會回復。不要把有副作用的操作當成可無條件重跑的 batch。
+
 ## 指令
 
 | 指令 | 用途 |
 |---|---|
-| `tools list [--target T] [--json]` | 名稱 + 一行描述，不帶 schema |
+| `help mcp` | 不連線的 MCP 使用與驗證指引 |
+| `tools list [--target T] [--json]` | 即時查詢名稱 + 一行描述，不帶 schema |
 | `tools search QUERY [--limit N]` | lexical 排序 top N（tool-list cache，10 分鐘 TTL） |
 | `tools describe NAME` | 該 tool 的 name、description、inputSchema |
 | `call NAME [--arg k=v] [--json @f] [--jq EXPR] [--max-chars N] [--out F]` | 呼叫一個 tool |

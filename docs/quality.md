@@ -16,14 +16,19 @@
 碰到 `internal/gw/` 或 `internal/cli/` 的 PR，merge 前跑：
 
 ```bash
-./agwctl tools list                      # 8 targets / 70 tools，與 agw-mcp.py verify 一致
+./agwctl help mcp                        # 離線 help 測試不應發送網路請求
+./agwctl doctor --expect-targets 8       # registry 檢查，不代表 tool call 成功
+./agwctl tools list                      # 與即時 agw-mcp.py verify 一致，數量隨 upstream 改變
 ./agwctl tools list -v                   # 協商 protocol version 沒有意外
 ./agwctl tools search "search"           # 命中合理，快取後 < 0.1s
-./agwctl call deepwiki_ask_question --arg repoName=agentgateway/agentgateway \
-    --arg question="ping" --max-chars 500
+./agwctl tools describe duckduckgo-search_search
+./agwctl call duckduckgo-search_search --arg query="model context protocol" --arg max_results=2 --jq .
 printf '%s\n' '{"name":"deepwiki_read_wiki_structure","arguments":{"repoName":"agentgateway/agentgateway"}}' \
-  | ./agwctl call --stdin
+  | ./agwctl call --stdin --max-chars 0
 ```
+
+搜尋驗收需看到實際結果 URL；`isError=false`、exit 0 或 doctor 成功都不足以證明
+搜尋可用。非同步寫入需保留回傳的 operation ID、等待 completed 並 read-back。
 
 輸出大小或延遲有變時，量測寫回 `PLAN.md` §7。
 

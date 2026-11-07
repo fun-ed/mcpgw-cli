@@ -3,10 +3,10 @@ package cli
 import (
 	"context"
 	"errors"
-	"strconv"
 	"fmt"
 	"log/slog"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/fun-ed/mcpgw-cli/internal/gw"
@@ -36,7 +36,6 @@ var errToolResult = errors.New("tool returned an error")
 // errTargets marks a doctor --expect-targets mismatch.
 var errTargets = errors.New("target count mismatch")
 
-
 var opts struct {
 	url           string
 	timeoutRaw    string
@@ -53,6 +52,8 @@ func NewRoot() *cobraRoot {
 	cmd := &cobra.Command{
 		Use:           "agwctl",
 		Short:         "Shell client for the local agentgateway",
+		Long:          "Discover tools, inspect their input schemas, then call them through MCP.\nRun 'agwctl help mcp' for cache, output, batch and result-verification guidance.",
+		Example:       "  agwctl tools search \"search the web\"\n  agwctl tools list --target duckduckgo-search\n  agwctl tools describe duckduckgo-search_search\n  agwctl doctor --expect-targets 8\n  agwctl help mcp",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -84,6 +85,7 @@ func NewRoot() *cobraRoot {
 	cmd.AddCommand(newCallCmd())
 	cmd.AddCommand(newDoctorCmd())
 	cmd.AddCommand(newVersionCmd())
+	cmd.AddCommand(newMCPHelpCmd())
 	root.cmd = cmd
 	return root
 }

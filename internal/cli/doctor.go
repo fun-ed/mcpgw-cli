@@ -32,9 +32,11 @@ type doctorReport struct {
 func newDoctorCmd() *cobra.Command {
 	var asJSON bool
 	cmd := &cobra.Command{
-		Use:   "doctor",
-		Short: "Gateway reachability, initialize latency, per-target tool counts",
-		Args:  cobra.NoArgs,
+		Use:     "doctor",
+		Short:   "Gateway reachability, initialize latency, per-target tool counts",
+		Long:    "Check TCP reachability, MCP initialization and live tools/list counts.\nThis does not execute tools/call or verify search results, credentials, or async writes.\nExit 6 means fewer targets than --expect-targets answered; tool counts can change upstream.",
+		Example: "  agwctl doctor --expect-targets 8\n  agwctl doctor --json",
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runDoctor(cmd.Context(), asJSON)
 		},

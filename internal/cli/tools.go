@@ -19,8 +19,10 @@ var gwErrConnect = gw.ErrConnect
 
 func newToolsCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "tools",
-		Short: "List, search and describe gateway tools",
+		Use:     "tools",
+		Short:   "List, search and describe gateway tools",
+		Long:    "Discover exact tool names and input schemas before calling them.\nSearch caches names/descriptions for 10 minutes; list and describe always query the live gateway.",
+		Example: "  agwctl tools search \"search the web\" --refresh\n  agwctl tools list --target duckduckgo-search\n  agwctl tools describe duckduckgo-search_search",
 	}
 	cmd.AddCommand(newToolsListCmd())
 	cmd.AddCommand(newToolsSearchCmd())
@@ -36,6 +38,7 @@ func newToolsListCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "All tools as name + one-line description (no schema)",
+		Long:  "Query the live tools/list registry without schemas. Use --target to list every tool of one target.\nA listed tool is not proof that its calls succeed; inspect a real result.",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runList(cmd.Context(), asJSON, target)
@@ -54,6 +57,7 @@ func newToolsSearchCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "search QUERY",
 		Short: "Lexical tool search, top 5 by default",
+		Long:  "Search cached tool names and descriptions, not the web or document content.\nUse --refresh after registry changes. No matches do not prove a target has no tools; use tools list --target.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runSearch(cmd.Context(), asJSON, limit, args[0])
@@ -68,6 +72,7 @@ func newToolsDescribeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "describe NAME",
 		Short: "Name, description and inputSchema of one tool",
+		Long:  "Fetch the current inputSchema for an exact name from tools list/search.\nKeep target hyphens and the tool-name underscore; do not guess aliases.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runDescribe(cmd.Context(), args[0])

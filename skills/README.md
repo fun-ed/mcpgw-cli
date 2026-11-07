@@ -4,7 +4,7 @@ repo 內建 agent skills。每個目錄一個 `SKILL.md`，frontmatter 帶 `name
 
 | skill | 用途 |
 |---|---|
-| `agwctl-usage` | harness 以 agwctl 取代直接 MCP 連線的操作流程；以 `--jq` 保留完整 JSON，預設文字模式限制大小 |
+| `agwctl-usage` | `agwctl help mcp` 對應的 discovery、schema、呼叫、JSONL 與結果驗證流程 |
 | `agwctl-maintenance` | 驗證、升級、發佈本 repo 的流程 |
 
 ## 維護規則

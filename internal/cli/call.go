@@ -27,6 +27,19 @@ func newCallCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "call [NAME]",
 		Short: "Call a gateway tool; --stdin batches JSONL requests over one session",
+		Long: `Call the exact NAME returned by tools list/search; inspect tools describe NAME first.
+--json supplies input arguments, not an output mode. Use --jq . for raw result JSON.
+--arg and --json are mutually exclusive. Successful --jq output is never truncated;
+--max-chars limits default text and --out writes the full result with mode 0600.
+--stdin emits raw JSONL over one session; --jq and --max-chars do not shape it.
+Exit 0 does not guarantee useful search results or completed async work: inspect
+content and operation status. A timed-out write may have run; do not blindly retry.
+Tool isError prints content and exits 1; --jq is skipped on isError.
+See 'agwctl help mcp' for result verification and batch guidance.`,
+		Example: `  agwctl call duckduckgo-search_search --arg query="model context protocol" --arg max_results=2
+  agwctl call duckduckgo-search_search --json '{"query":"model context protocol","max_results":2}' --jq .
+  agwctl call duckduckgo-search_search --json @request.json --out result.json
+  printf '%s\n' '{"name":"openviking_health","arguments":{}}' | agwctl call --stdin --max-chars 0`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if stdin {
 				if len(args) != 0 {
