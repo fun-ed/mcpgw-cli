@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| 狀態 | v0.2.3；修正 CLI 的 jq 輸出截斷，保留預設文字上限 |
+| 狀態 | v0.2.4；新增離線 MCP help、正確呼叫與結果驗證指引 |
 | 日期 | 2026-11-08 |
 | 語言 | 以 mise Go 1.27.3 建置；module 最低相容版本為 Go 1.26.7 |
 | 位置 | `~/temp/agentgateway/agwctl/`，遠端 `github.com/fun-ed/mcpgw-cli`（私有） |
@@ -173,7 +173,7 @@ agwctl call target_get_query_result --arg id="$ID" --max-chars 8000
 
 兩條配套：MCP tool 幾乎不宣告 outputSchema，SKILL.md 要教「先做一次探測 call 看輸出形狀，再寫 jq」；可執行範本放 `examples/`，M2/M3 對唯讀 target 實跑過。這對 agwctl 的硬性要求：JSON 進 JSON 出、exit code 穩定、stdout 純淨，就是 §3 的輸出契約，不另立功能。`agwctl flow`、script runner、workflow 引擎全部 YAGNI，Bash 加 jq 就是那個 deterministic program。
 
-## 5. Module 與依賴（v0.2.3）
+## 5. Module 與依賴（v0.2.4）
 
 依 `.tool-versions` 與 `go.mod` 核對；patch 更新透過 proxy.golang.org 解析：
 

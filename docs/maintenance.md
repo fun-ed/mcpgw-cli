@@ -37,12 +37,27 @@ cd ~/temp/agentgateway && ./agw-mcp.py verify
 
 ## Release
 
+1. 更新 `internal/gw/client.go` 的 `ClientVersion`、`PLAN.md` 狀態與 `CHANGELOG.md`。
+2. 執行 `mise exec -- go test ./...`、`mise exec -- go vet ./...`，核對 binary 的
+   `version` 與 `--version`，再 commit 並推送。版本常數也用於 MCP initialize identity。
+3. 從乾淨的已提交 revision，以 `CGO_ENABLED=0` 與 `mise exec -- go build -trimpath`
+   建置 darwin/linux × amd64/arm64。每個 tar.gz 使用
+   `agwctl_<version>_<os>_<arch>.tar.gz`，附 `SHA256SUMS`；產物放 repo 外。
+4. 建立指向已驗證 commit 的 tag，再推送該 tag。以 CHANGELOG 與實際驗證結果
+   撰寫 release notes，不把未測平台寫成執行驗證通過。
+
 ```bash
-git tag vX.Y.Z && git push origin vX.Y.Z
+git tag vX.Y.Z
+git push origin vX.Y.Z
+gh release create vX.Y.Z --repo fun-ed/mcpgw-cli --verify-tag \
+  --title "vX.Y.Z" --notes-file /path/to/release-notes.md \
+  /path/to/artifacts/*.tar.gz /path/to/artifacts/SHA256SUMS
 ```
 
-- 版本語意跟著 binary 功能面走；PLAN.md 狀態表同步
-- 私有 repo，不安裝到 brew；安裝就是 `go build`
+5. 重新下載 release assets，核對 SHA256SUMS、archive 結構與平台格式；本機平台
+   解壓執行 `version`、`help mcp` 與 gateway doctor。交叉編譯不代表其他平台已實跑。
+6. 本機安裝獨立驗證：`mise exec -- go build -o "$HOME/go/bin/agwctl" ./cmd/agwctl`，
+   再用 PATH 上的 `agwctl version` 確認。私有 repo 不發佈至 Homebrew。
 
 ## Skills / Agents 檔案的維護
 

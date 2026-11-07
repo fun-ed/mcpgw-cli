@@ -3,6 +3,20 @@
 All notable changes to this project are documented in this file. The format
 follows Keep a Changelog; versions follow SemVer.
 
+## [0.2.4] - 2026-11-08
+
+### Added
+
+- `agwctl help mcp` 離線指引，說明 discovery、schema、JSON 參數、輸出、batch 與結果驗證。
+- root、tools、call、doctor help 補上操作範例與限制；測試確認各 help 不向 gateway 發送請求。
+
+### Changed
+
+- CLI 版本與 MCP initialize identity 更新為 `agwctl/0.2.4`。
+- README、skills 與維護指引矯正即時 registry 與 search cache 的差異、舊 tool name、
+  `call --json` 輸入語意，以及 `doctor`／exit 0 不代表工具任務成功的限制。
+- 保留既有 MCP transport、輸出格式及 exit codes；依賴版本未變更。
+
 ## [0.2.3] - 2026-11-02
 
 ### Fixed

@@ -10,7 +10,7 @@ import (
 
 const (
 	ClientName    = "agwctl"
-	ClientVersion = "0.2.3"
+	ClientVersion = "0.2.4"
 )
 
 // ErrConnect marks failures during transport setup or the initialize handshake.
