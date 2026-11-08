@@ -11,8 +11,8 @@ cd ~/temp/agentgateway && ./agw-mcp.py verify
 
 - tool-list cache 在 `os.UserCacheDir()/agwctl/`，可以整個刪掉，下次自動重建
 - cache 只含 name/target/description，schema 永遠活取，不會有 schema 腐爛問題
-- harness 端自 2026-09-02 cutover 起不再掛 `agentgateway` MCP；唯一存取路徑是
-  本 CLI。舊 session 的 `mcp__agentgateway__*` 是遺留，不要依賴
+- 直接 MCP 與 agwctl 可並存；以目前 harness 設定與生成的 inventory 為準。
+  需要避免 schema 常駐 context 時優先使用 CLI，工具名稱仍須從即時 registry 取得。
 - `agwctl` 裝在 `/usr/local/bin`（symlink 指向 `~/go/bin/agwctl`，2026-09-02
   建立），全部 shell 含 GUI 啟動的 harness 都找得到；rebuild 只寫
   `~/go/bin/agwctl`，symlink 自動跟上
